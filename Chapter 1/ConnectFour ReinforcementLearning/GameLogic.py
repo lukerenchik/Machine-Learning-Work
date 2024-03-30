@@ -10,7 +10,6 @@ class StateGenerator:
         self.all_states = None
         self.board_rows = 6
         self.board_cols = 7
-        self.board_size = self.board_rows * self.board_cols
     def get_all_states(self):
         current_symbol = 1
         current_state = State()
@@ -23,7 +22,7 @@ class StateGenerator:
     def get_all_states_impl(self, current_state, current_symbol, all_states):
         for i in range(self.board_rows):
             for j in range(self.board_cols):
-                if current_state.gameboard[i, j] == 0 and (current_state.gameboard[i, j - 1] != 0 or current_state.gameboard[i, 0]):
+                if current_state.gameboard[i, j] == 0 and (current_state.gameboard[i, j - 1] != 0 or j == 0):
                     new_state = current_state.next_state(i, j, current_symbol)
                     new_hash = new_state.hash()
                     if new_hash not in all_states:
@@ -45,7 +44,7 @@ class StateGenerator:
 
 class State:
     def __init__(self):
-        self.gameboard = np.zeros(BOARD_SIZE)
+        self.gameboard = np.zeros((BOARD_ROWS, BOARD_COLS))
         self.winner = None
         self.hash_val = None
         self.end = None
@@ -65,8 +64,8 @@ class State:
         TARGET = 4
 
         # Check rows and columns
-        for axis in range(2):
-            for line in np.rot90(self.gameboard, axis):
+        for line in self.gameboard:
+            for line in self.gameboard.T:
                 if np.any(np.convolve(line == 1, np.ones(TARGET), mode='valid') == TARGET):
                     self.winner = 1
                     self.end = True

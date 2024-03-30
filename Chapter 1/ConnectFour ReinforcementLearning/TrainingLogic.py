@@ -1,9 +1,8 @@
 # Luke Renchik - 3/29
-from StateGenerator import StateGenerator
+from GameLogic import all_states
 import pickle
 import numpy as np
-state_generator = StateGenerator()
-all_states = state_generator.get_all_states()
+
 
 BOARD_ROWS = 6
 BOARD_COLS = 7
@@ -55,6 +54,7 @@ class Player:
             self.estimations[state] += self.step_size * td_error
 
     def act(self):
+        print("we have entered another iteration")
         state = self.states[-1]
         next_states = []
         next_positions = []
@@ -72,6 +72,8 @@ class Player:
             return action
 
         values = []
+        print(next_states)
+        print(next_positions)
         for hash_val, pos in zip(next_states, next_positions):
             values.append((self.estimations[hash_val], pos))
         # to select one of the actions of equal value at random due to Python's sort is stable
