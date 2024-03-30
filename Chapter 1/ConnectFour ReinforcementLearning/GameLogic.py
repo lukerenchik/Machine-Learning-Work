@@ -1,14 +1,48 @@
-#Luke Renchik - 3/29
+# Luke Renchik - 3/29
 import numpy as np
-from StateGenerator import StateGenerator
+
 BOARD_ROWS = 6
 BOARD_COLS = 7
 BOARD_SIZE = BOARD_ROWS * BOARD_COLS
 
-#TODO: Figure out where to add logic about pieces falling into their location, and the connect 4 rules.
+class StateGenerator:
+    def __init__(self):
+        self.all_states = None
+        self.board_rows = 6
+        self.board_cols = 7
+        self.board_size = self.board_rows * self.board_cols
+    def get_all_states(self):
+        current_symbol = 1
+        current_state = State()
+        all_states = dict()
+        all_states[current_state.hash()] = (current_state, current_state.is_end())
+        self.get_all_states_impl(current_state, current_symbol, all_states)
+        return all_states
 
-state_generator = StateGenerator()
-all_states = state_generator.get_all_states()
+    #this function is currently looping through every place on the connect 4 board, need to only check the insertion locations
+    def get_all_states_impl(self, current_state, current_symbol, all_states):
+        for i in range(self.board_rows):
+            for j in range(self.board_cols):
+                if current_state.gameboard[i, j] == 0 and (current_state.gameboard[i, j - 1] != 0 or current_state.gameboard[i, 0]):
+                    new_state = current_state.next_state(i, j, current_symbol)
+                    new_hash = new_state.hash()
+                    if new_hash not in all_states:
+                        is_end = new_state.is_end()
+                        all_states[new_hash] = (new_state, is_end)
+                        if not is_end:
+                            self.get_all_states_impl(new_state, -current_symbol, all_states)
+
+    @staticmethod
+    def save_states_to_file(states, file_path):
+        # Serialization logic here
+        pass
+
+    @staticmethod
+    def load_states_from_file(file_path):
+        # Deserialization logic here
+        pass
+
+
 class State:
     def __init__(self):
         self.gameboard = np.zeros(BOARD_SIZE)
@@ -77,7 +111,7 @@ class State:
         self.end = False
         return self.end
 
-    def nextState(self, i, j, symbol):
+    def next_state(self, i, j, symbol):
         new_state = State()
         new_state.gameboard = np.copy(self.gameboard)
         new_state.gameboard[i, j] = symbol
@@ -95,14 +129,6 @@ class State:
                     token = "0"
                 out += token + " | "
             print(out)
-
-
-# TODO This function needs to be modified to check only next possible moves, which involves placing pieces at the top of
-# TODO the board and having them fall into place. There are at most 7 possibles moves from any one state.
-
-
-
-
 
 
 class Judger:
@@ -127,7 +153,7 @@ class Judger:
             yield self.p1
             yield self.p2
 
-    def play(self, print_state=False):
+    def play(self, print_state=True):
         alternator = self.alternate()
         self.reset()
         current_state = State()
@@ -138,7 +164,7 @@ class Judger:
         while True:
             player = next(alternator)
             i, j, symbol = player.act()
-            next_state_hash = current_state.nextState(i, j, symbol).hash()
+            next_state_hash = current_state.next_state(i, j, symbol).hash()
             current_state, is_end = all_states[next_state_hash]
             self.p1.set_state(current_state)
             self.p2.set_state(current_state)
@@ -164,5 +190,11 @@ class HumanPlayer:
         self.symbol = symbol
 
     def act(self):
-        #This method will also require in depth study and modification
+        self.state.print_state()
+        key = input("Input your position:")
         pass
+
+
+state_generator = StateGenerator()
+all_states = state_generator.get_all_states()
+

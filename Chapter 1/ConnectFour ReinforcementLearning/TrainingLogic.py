@@ -1,10 +1,12 @@
 # Luke Renchik - 3/29
 from StateGenerator import StateGenerator
 import pickle
-
+import numpy as np
 state_generator = StateGenerator()
 all_states = state_generator.get_all_states()
 
+BOARD_ROWS = 6
+BOARD_COLS = 7
 
 class Player:
     # @step_size: the step size to update estimations
@@ -53,8 +55,31 @@ class Player:
             self.estimations[state] += self.step_size * td_error
 
     def act(self):
-        # This function will require extensive study to determine what modifications need to be made.
-        pass
+        state = self.states[-1]
+        next_states = []
+        next_positions = []
+
+        for i in range(BOARD_ROWS):
+            for j in range(BOARD_COLS):
+                if state.gameboard[i, j] == 0 and (state.gameboard[i, j - 1] != 0 or j == 0):
+                    next_positions.append([i, j])
+                    next_states.append(state.next_state(
+                        i, j, self.symbol).hash())
+        if np.random.rand() < self.epsilon:
+            action = next_positions[np.random.randint(len(next_positions))]
+            action.append(self.symbol)
+            self.greedy[-1] = False
+            return action
+
+        values = []
+        for hash_val, pos in zip(next_states, next_positions):
+            values.append((self.estimations[hash_val], pos))
+        # to select one of the actions of equal value at random due to Python's sort is stable
+        np.random.shuffle(values)
+        values.sort(key=lambda x: x[0], reverse=True)
+        action = values[0][1]
+        action.append(self.symbol)
+        return action
 
     def save_policy(self):
         with open('policy_%s.bin' % ('first' if self.symbol == 1 else 'second'), 'wb') as f:
