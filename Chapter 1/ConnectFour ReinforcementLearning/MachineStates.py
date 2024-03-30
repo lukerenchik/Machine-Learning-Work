@@ -47,6 +47,16 @@ def compete(turns):
     print('%d turns, player 1 win %.02f, player 2 win %.02f' % (turns, player1_win / turns, player2_win / turns))
 
 def play():
-    #This will require modification
-    pass
+    while True:
+        player1 = HumanPlayer()
+        player2 = Player(epsilon=0)
+        judger = Judger(player1, player2)
+        player2.load_policy()
+        winner = judger.play()
+        if winner == player2.symbol:
+            print("You lose!")
+        elif winner == player1.symbol:
+            print("You win!")
+        else:
+            print("It is a tie!")
 

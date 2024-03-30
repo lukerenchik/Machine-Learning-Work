@@ -1,15 +1,17 @@
 #Luke Renchik - 3/29
 import numpy as np
 from StateGenerator import StateGenerator
-BOARD_ROWS = 7
+BOARD_ROWS = 6
 BOARD_COLS = 7
 BOARD_SIZE = BOARD_ROWS * BOARD_COLS
+
+#TODO: Figure out where to add logic about pieces falling into their location, and the connect 4 rules.
 
 state_generator = StateGenerator()
 all_states = state_generator.get_all_states()
 class State:
     def __init__(self):
-        self.data = np.zeros(BOARD_SIZE)
+        self.gameboard = np.zeros(BOARD_SIZE)
         self.winner = None
         self.hash_val = None
         self.end = None
@@ -17,36 +19,56 @@ class State:
     def hash(self):
         if self.hash_val is None:
             self.hash_val = 0
-            for i in np.nditer(self.data):
+            for i in np.nditer(self.gameboard):
                 self.hash_val = self.hash_val * 3 + i + 1
             return self.hash_val
 
     def is_end(self):
         if self.end is not None:
             return self.end
-        results = []
-        # TODO: IDEA: Iterate through board (Horiz, Vert, Diag), dropping the tail
-        # TODO: adding to the head, if the total value ever equals 4 declare player 1 as winner, if snakes equal -4
-        # TODO: declare player 2 winner.
-        for i in range(BOARD_ROWS):
-            results.append(np.sum(self.data[i, :]))
-        # Check Cols
-        for i in range(BOARD_COLS):
-            results.append(np.sum(self.data[:, i]))
 
-        for result in results:
-            if result == 4:
+        # Define the target sequence length
+        TARGET = 4
+
+        # Check rows and columns
+        for axis in range(2):
+            for line in np.rot90(self.gameboard, axis):
+                if np.any(np.convolve(line == 1, np.ones(TARGET), mode='valid') == TARGET):
+                    self.winner = 1
+                    self.end = True
+                    return self.end
+                if np.any(np.convolve(line == -1, np.ones(TARGET), mode='valid') == TARGET):
+                    self.winner = -1
+                    self.end = True
+                    return self.end
+
+        # Check diagonals
+        for shift in range(-self.gameboard.shape[0] + TARGET, self.gameboard.shape[1] - TARGET + 1):
+
+            diag = np.diagonal(self.gameboard, offset=shift)
+
+            if np.any(np.convolve(diag == 1, np.ones(TARGET), mode='valid') == TARGET):
                 self.winner = 1
                 self.end = True
                 return self.end
-            if result == -4:
+            if np.any(np.convolve(diag == -1, np.ones(TARGET), mode='valid') == TARGET):
+                self.winner = -1
+                self.end = True
+                return self.end
+
+            diag = np.diagonal(np.fliplr(self.gameboard), offset=shift)
+
+            if np.any(np.convolve(diag == 1, np.ones(TARGET), mode='valid') == TARGET):
+                self.winner = 1
+                self.end = True
+                return self.end
+            if np.any(np.convolve(diag == -1, np.ones(TARGET), mode='valid') == TARGET):
                 self.winner = -1
                 self.end = True
                 return self.end
 
         # whether it's a tie
-        sum_values = np.sum(np.abs(self.data))
-        if sum_values == BOARD_SIZE:
+        if not np.any(self.gameboard == 0):
             self.winner = 0
             self.end = True
             return self.end
@@ -57,17 +79,17 @@ class State:
 
     def nextState(self, i, j, symbol):
         new_state = State()
-        new_state.data = np.copy(self.data)
-        new_state.data[i, j] = symbol
+        new_state.gameboard = np.copy(self.gameboard)
+        new_state.gameboard[i, j] = symbol
         return new_state
 
     def print_state(self):
         for i in range(BOARD_ROWS):
             out = "| "
             for j in range(BOARD_COLS):
-                if self.data[i, j] == 1:
+                if self.gameboard[i, j] == 1:
                     token = "*"
-                elif self.data[i, j] == -1:
+                elif self.gameboard[i, j] == -1:
                     token = "x"
                 else:
                     token = "0"

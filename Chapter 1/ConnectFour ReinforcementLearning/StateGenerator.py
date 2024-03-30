@@ -16,10 +16,11 @@ class StateGenerator:
         self.get_all_states_impl(current_state, current_symbol, all_states)
         return all_states
 
+    #this function is currently looping through every place on the connect 4 board, need to only check the insertion locations
     def get_all_states_impl(self, current_state, current_symbol, all_states):
         for i in range(self.board_rows):
             for j in range(self.board_cols):
-                if current_state.data[i, j] == 0:
+                if current_state.gameboard[i, j] == 0 and (current_state.gameboard[i, j - 1] != 0 or current_state.gameboard[i, 0]):
                     new_state = current_state.nextState(i, j, current_symbol)
                     new_hash = new_state.hash()
                     if new_hash not in all_states:

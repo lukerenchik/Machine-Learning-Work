@@ -106,7 +106,7 @@ class State:
 def get_all_states_impl(current_state, current_symbol, all_states):
     for i in range(BOARD_ROWS):
         for j in range(BOARD_COLS):
-            if current_state.data[i][j] == 0:
+            if current_state.gameboard[i][j] == 0:
                 new_state = current_state.next_state(i, j, current_symbol)
                 new_hash = new_state.hash()
                 if new_hash not in all_states:
@@ -226,7 +226,7 @@ class Player:
         next_positions = []
         for i in range(BOARD_ROWS):
             for j in range(BOARD_COLS):
-                if state.data[i, j] == 0:
+                if state.gameboard[i, j] == 0:
                     next_positions.append([i, j])
                     next_states.append(state.next_state(
                         i, j, self.symbol).hash())
