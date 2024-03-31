@@ -4,6 +4,9 @@ BOARD_ROWS = 6
 BOARD_COLS = 7
 iter = 0
 
+
+# TODO Implement: Alpha-Beta pruning, Symmetry Reduction,
+# TODO Potential Implementations: Transposition Table, Depth-Limited Search with Heuristics, Parallel Processing
 class StateGenerator:
     def __init__(self):
         self.all_states = None
@@ -20,22 +23,29 @@ class StateGenerator:
         print("We have moved through the implied section")
         return all_states
 
-    #TODO Implement: Alpha-Beta pruning, Symmetry Reduction,
-    #TODO Potential Implementations: Transposition Table, Depth-Limited Search with Heuristics, Parallel Processing
     def get_all_states_impl(self, current_state, current_symbol, all_states):
         global iter
         for i in range(self.board_rows):
             for j in range(self.board_cols):
-                print(iter)
-                if current_state.gameboard[i, j] == 0 and (current_state.gameboard[i - 1, j] != 0 or i == 0):
+                if current_state.gameboard[i, j] == 0 and (i == 0 or current_state.gameboard[i - 1, j] != 0):
                     new_state = current_state.next_state(i, j, current_symbol)
+                    mirrored_state = new_state.mirror()
+
+                    # Generate hashes for both states
                     new_hash = new_state.hash()
-                    if new_hash not in all_states:
-                        is_end = new_state.is_end()
-                        all_states[new_hash] = (new_state, is_end)
+                    mirrored_hash = mirrored_state.hash()
+
+                    # Decide which state to store based on your criterion (here, the smaller hash)
+                    state_to_store = new_state if new_hash < mirrored_hash else mirrored_state
+                    hash_to_store = min(new_hash, mirrored_hash)
+
+                    if hash_to_store not in all_states:
+                        is_end = state_to_store.is_end()
+                        all_states[hash_to_store] = (state_to_store, is_end)
                         iter += 1
+                        print(iter)
                         if not is_end:
-                            self.get_all_states_impl(new_state, -current_symbol, all_states)
+                            self.get_all_states_impl(state_to_store, -current_symbol, all_states)
 
     @staticmethod
     def save_states_to_file(states, file_path):
@@ -130,6 +140,13 @@ class State:
                 if self.check_line(diag, TARGET) != 0:
                     return self.check_line(diag, TARGET)
         return 0
+
+    def mirror(self):
+        mirrored_gameboard = np.fliplr(self.gameboard)  # Assuming the board is stored in a numpy array
+        mirrored_state = State()
+        mirrored_state.gameboard = mirrored_gameboard
+        return mirrored_state
+
 
 class Judger:
     # @player1: the player who will move first, its chessman will be 1
