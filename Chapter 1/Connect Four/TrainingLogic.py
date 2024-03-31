@@ -1,5 +1,5 @@
 # Luke Renchik - 3/29
-from GameLogic import all_states
+from GameLogic import state_generator
 import pickle
 import numpy as np
 
@@ -26,32 +26,22 @@ class Player:
         self.states.append(state)
         self.greedy.append(True)
 
-    #TODO: Modify this to add any unfound keys into the all states
+
     def set_symbol(self, symbol):
         self.symbol = symbol
-        for hash_val in all_states:
-            state, is_end = all_states[hash_val]
-            if is_end:
-                if state.winner == self.symbol:
-                    self.estimations[hash_val] = 1.0
-                elif state.winner == 0:
-                    # we need to distinguish between a tie and a loss
-                    self.estimations[hash_val] = 0.5
-                else:
-                    self.estimations[hash_val] = 0
-            else:
-                self.estimations[hash_val] = 0.5
-
-    # update value estimation
+        #TODO Revisit and see if more is needed here
 
     def backup(self):
         states = [state.hash() for state in self.states]
-
         for i in reversed(range(len(states) - 1)):
             state = states[i]
-            td_error = self.greedy[i] * (
-                    self.estimations[states[i + 1]] - self.estimations[state]
-            )
+            # Ensure states[i + 1] is in estimations, or initialize it
+            if states[i + 1] not in self.estimations:
+                self.estimations[states[i + 1]] = 0.5  # Default unknown state value
+            # Similar check for current state
+            if state not in self.estimations:
+                self.estimations[state] = 0.5
+            td_error = self.greedy[i] * (self.estimations[states[i + 1]] - self.estimations[state])
             self.estimations[state] += self.step_size * td_error
 
     def act(self):
@@ -64,17 +54,17 @@ class Player:
             for j in range(BOARD_COLS):
                 if state.gameboard[i, j] == 0 and (state.gameboard[i - 1, j] != 0 or i == 0):
                     next_positions.append([i, j])
-                    next_states.append(state.next_state(
-                        i, j, self.symbol).hash())
+                    next_state_hash = state.next_state(i, j, self.symbol).hash()
+                    if next_state_hash not in self.estimations:
+                        self.estimations[next_state_hash] = 0.5
+                    next_states.append(next_state_hash)
         if np.random.rand() < self.epsilon:
             action = next_positions[np.random.randint(len(next_positions))]
             action.append(self.symbol)
             self.greedy[-1] = False
             return action
-
         values = []
-        print(next_states)
-        print(next_positions)
+
         for hash_val, pos in zip(next_states, next_positions):
             values.append((self.estimations[hash_val], pos))
         # to select one of the actions of equal value at random due to Python's sort is stable

@@ -5,47 +5,36 @@ BOARD_COLS = 7
 iter = 0
 
 
-# TODO Implement: Alpha-Beta pruning, Symmetry Reduction,
+# TODO Implement: Alpha-Beta pruning,
 # TODO Potential Implementations: Transposition Table, Depth-Limited Search with Heuristics, Parallel Processing
 class StateGenerator:
     def __init__(self):
-        self.all_states = None
+        self.transposition_table = dict()  # Used dynamically during gameplay or simulation
         self.board_rows = 6
         self.board_cols = 7
-    def get_all_states(self):
-        current_symbol = 1
-        current_state = State()
-        all_states = dict()
-        print("We have made it into the function")
-        all_states[current_state.hash()] = (current_state, current_state.is_end())
-        print("We have made it past the hashing section")
-        self.get_all_states_impl(current_state, current_symbol, all_states)
-        print("We have moved through the implied section")
-        return all_states
 
-    def get_all_states_impl(self, current_state, current_symbol, all_states):
-        global iter
-        for i in range(self.board_rows):
-            for j in range(self.board_cols):
-                if current_state.gameboard[i, j] == 0 and (i == 0 or current_state.gameboard[i - 1, j] != 0):
-                    new_state = current_state.next_state(i, j, current_symbol)
-                    mirrored_state = new_state.mirror()
+    def dynamic_evaluation(self, current_state, current_symbol):
+        # Check for state or its mirror in the transposition table
+        mirrored_state = current_state.mirror()
+        new_hash = current_state.hash()
+        mirrored_hash = mirrored_state.hash()
+        hash_to_use = min(new_hash, mirrored_hash)  # Or any other criterion
 
-                    # Generate hashes for both states
-                    new_hash = new_state.hash()
-                    mirrored_hash = mirrored_state.hash()
+        if hash_to_use in self.transposition_table:
+            return self.transposition_table[hash_to_use]
+        else:
+            #TODO Evaluate the state here (can be heuristic evaluation, minimax score, etc.)
+            # This is a placeholder for actual evaluation logic
+            evaluation_result = self.evaluate_state(current_state)
 
-                    # Decide which state to store based on your criterion (here, the smaller hash)
-                    state_to_store = new_state if new_hash < mirrored_hash else mirrored_state
-                    hash_to_store = min(new_hash, mirrored_hash)
+            # Store the result in the transposition table
+            self.transposition_table[hash_to_use] = evaluation_result
+            return evaluation_result
 
-                    if hash_to_store not in all_states:
-                        is_end = state_to_store.is_end()
-                        all_states[hash_to_store] = (state_to_store, is_end)
-                        iter += 1
-                        print(iter)
-                        if not is_end:
-                            self.get_all_states_impl(state_to_store, -current_symbol, all_states)
+    def evaluate_state(self, state):
+        #TODO Implement the actual state evaluation logic here
+        # For example, return a score, or (score, best_move)
+        pass
 
     @staticmethod
     def save_states_to_file(states, file_path):
@@ -173,22 +162,22 @@ class Judger:
     def play(self, print_state=True):
         alternator = self.alternate()
         self.reset()
-        current_state = State()
+        current_state = State()  # Assuming State() initializes an empty board
         self.p1.set_state(current_state)
         self.p2.set_state(current_state)
         if print_state:
             current_state.print_state()
         while True:
             player = next(alternator)
-            i, j, symbol = player.act()
-            next_state_hash = current_state.next_state(i, j, symbol).hash()
-            current_state, is_end = all_states[next_state_hash]
+            i, j, symbol = player.act()  # Assume act returns indices and symbol
+            # Directly generate the next state without using all_states
+            current_state = current_state.next_state(i, j, symbol)
             self.p1.set_state(current_state)
             self.p2.set_state(current_state)
             if print_state:
                 current_state.print_state()
-            if is_end:
-                return current_state.winner
+            if current_state.is_end():  # Assuming is_end() checks for game end
+                return current_state.winner  # Assuming winner attribute exists
 
 
 class HumanPlayer:
@@ -214,5 +203,4 @@ class HumanPlayer:
 print("This is what is causing the slowdown")
 state_generator = StateGenerator()
 print("actually its this breakpoint")
-all_states = state_generator.get_all_states()
 print("no its running fine.")
