@@ -26,6 +26,7 @@ class Player:
         self.states.append(state)
         self.greedy.append(True)
 
+    #TODO: Modify this to add any unfound keys into the all states
     def set_symbol(self, symbol):
         self.symbol = symbol
         for hash_val in all_states:
@@ -61,7 +62,7 @@ class Player:
 
         for i in range(BOARD_ROWS):
             for j in range(BOARD_COLS):
-                if state.gameboard[i, j] == 0 and (state.gameboard[i, j - 1] != 0 or j == 0):
+                if state.gameboard[i, j] == 0 and (state.gameboard[i - 1, j] != 0 or i == 0):
                     next_positions.append([i, j])
                     next_states.append(state.next_state(
                         i, j, self.symbol).hash())

@@ -1,9 +1,8 @@
 # Luke Renchik - 3/29
 import numpy as np
-
 BOARD_ROWS = 6
 BOARD_COLS = 7
-BOARD_SIZE = BOARD_ROWS * BOARD_COLS
+iter = 0
 
 class StateGenerator:
     def __init__(self):
@@ -14,20 +13,27 @@ class StateGenerator:
         current_symbol = 1
         current_state = State()
         all_states = dict()
+        print("We have made it into the function")
         all_states[current_state.hash()] = (current_state, current_state.is_end())
+        print("We have made it past the hashing section")
         self.get_all_states_impl(current_state, current_symbol, all_states)
+        print("We have moved through the implied section")
         return all_states
 
-    #this function is currently looping through every place on the connect 4 board, need to only check the insertion locations
+    #TODO Implement: Alpha-Beta pruning, Symmetry Reduction,
+    #TODO Potential Implementations: Transposition Table, Depth-Limited Search with Heuristics, Parallel Processing
     def get_all_states_impl(self, current_state, current_symbol, all_states):
+        global iter
         for i in range(self.board_rows):
             for j in range(self.board_cols):
-                if current_state.gameboard[i, j] == 0 and (current_state.gameboard[i, j - 1] != 0 or j == 0):
+                print(iter)
+                if current_state.gameboard[i, j] == 0 and (current_state.gameboard[i - 1, j] != 0 or i == 0):
                     new_state = current_state.next_state(i, j, current_symbol)
                     new_hash = new_state.hash()
                     if new_hash not in all_states:
                         is_end = new_state.is_end()
                         all_states[new_hash] = (new_state, is_end)
+                        iter += 1
                         if not is_end:
                             self.get_all_states_impl(new_state, -current_symbol, all_states)
 
@@ -60,48 +66,29 @@ class State:
         if self.end is not None:
             return self.end
 
-        # Define the target sequence length
-        TARGET = 4
-
-        # Check rows and columns
+        # Check rows
         for line in self.gameboard:
-            for line in self.gameboard.T:
-                if np.any(np.convolve(line == 1, np.ones(TARGET), mode='valid') == TARGET):
-                    self.winner = 1
-                    self.end = True
-                    return self.end
-                if np.any(np.convolve(line == -1, np.ones(TARGET), mode='valid') == TARGET):
-                    self.winner = -1
-                    self.end = True
-                    return self.end
-
-        # Check diagonals
-        for shift in range(-self.gameboard.shape[0] + TARGET, self.gameboard.shape[1] - TARGET + 1):
-
-            diag = np.diagonal(self.gameboard, offset=shift)
-
-            if np.any(np.convolve(diag == 1, np.ones(TARGET), mode='valid') == TARGET):
-                self.winner = 1
-                self.end = True
-                return self.end
-            if np.any(np.convolve(diag == -1, np.ones(TARGET), mode='valid') == TARGET):
-                self.winner = -1
+            result = self.check_line(line=line)
+            if result != 0:
+                self.winner = result
                 self.end = True
                 return self.end
 
-            diag = np.diagonal(np.fliplr(self.gameboard), offset=shift)
-
-            if np.any(np.convolve(diag == 1, np.ones(TARGET), mode='valid') == TARGET):
-                self.winner = 1
-                self.end = True
-                return self.end
-            if np.any(np.convolve(diag == -1, np.ones(TARGET), mode='valid') == TARGET):
-                self.winner = -1
+        # Check columns by iterating over the transpose
+        for line in self.gameboard.T:
+            result = self.check_line(line=line)
+            if result != 0:
+                self.winner = result
                 self.end = True
                 return self.end
 
-        # whether it's a tie
-        if not np.any(self.gameboard == 0):
+        result = self.check_diagonals()
+        if result != 0:
+            self.winner = result
+            self.end = True
+            return self.end
+
+        if not np.any(self.gameboard == 0) and self.end is not True:
             self.winner = 0
             self.end = True
             return self.end
@@ -129,6 +116,20 @@ class State:
                 out += token + " | "
             print(out)
 
+    def check_line(self, line, TARGET=4):
+        if np.any(np.convolve(line == 1, np.ones(TARGET), mode='valid') == TARGET):
+            return 1
+        if np.any(np.convolve(line == -1, np.ones(TARGET), mode='valid') == TARGET):
+            return -1
+        return 0
+
+    def check_diagonals(self, TARGET=4):
+        for direction in [self.gameboard, np.fliplr(self.gameboard)]:
+            for shift in range(-direction.shape[0] + TARGET, direction.shape[1] - TARGET + 1):
+                diag = np.diagonal(direction, offset=shift)
+                if self.check_line(diag, TARGET) != 0:
+                    return self.check_line(diag, TARGET)
+        return 0
 
 class Judger:
     # @player1: the player who will move first, its chessman will be 1
@@ -193,7 +194,8 @@ class HumanPlayer:
         key = input("Input your position:")
         pass
 
-
+print("This is what is causing the slowdown")
 state_generator = StateGenerator()
+print("actually its this breakpoint")
 all_states = state_generator.get_all_states()
-
+print("no its running fine.")
