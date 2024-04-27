@@ -40,6 +40,5 @@ class testbed:
             signal['value'] += random.uniform(range_min, range_max) * signal['std_dev']
 
 
-    def add_test_cases(self):
-        #TODO: Add ability to use testcases
-        pass
+    def return_all_signals_as_dictionary(self):
+        return dict(self.signals.items())
