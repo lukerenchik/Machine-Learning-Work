@@ -33,6 +33,33 @@ class ViolinPlotter:
 
         plt.show()
 
+
+class AgentVisualizer:
+    def __init__(self, estimations):
+        self.estimations = estimations
+        self.title = "Agent Testbed Estimation"
+
+    def plot_estimations(self):
+        # Extract keys and values from the dictionary
+        reward_signals = list(self.estimations.keys())
+        expected_rewards = list(self.estimations.values())
+
+        # Creating the bar graph
+        plt.figure(figsize=(10, 5))  # Adjust the figure size as needed
+        plt.bar(reward_signals, expected_rewards, color='blue')  # Customize color as needed
+
+        # Adding title and labels
+        plt.title(self.title)
+        plt.xlabel('Reward Signals')
+        plt.ylabel('Expected Rewards')
+
+        # Optional: Adding value labels on top of each bar
+        for i, value in enumerate(expected_rewards):
+            plt.text(i, value + 0.5, str(value), ha='center', va='bottom')
+
+        # Show the plot
+        plt.show()
+
 # Usage example
 # plotter = VerticalGraphPlotter("Problem Solving Metrics")
 # plotter.add_data("Easy Problem Solve", 10, 2)

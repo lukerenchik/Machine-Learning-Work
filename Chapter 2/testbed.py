@@ -4,6 +4,7 @@ import random
 
 class testbed:
     def __init__(self, num_signals = 0, step_size_parameter = 0):
+        self.observers = []
         self.num_signals = num_signals
         self.signals = {}
         self.step_size_parameter = step_size_parameter
@@ -18,6 +19,10 @@ class testbed:
         for i in range(num_signals):
             self.signals[f'signal_{i}'] = {'value': 0, 'std_dev': 0, 'derivative': random.choice(self.derivatives)}
 
+    def add_observer(self, observer):
+        self.observers.append(observer)
+
+
     def print_signals(self):
         print("--- Signals ---")
         for name, info in self.signals.items():
@@ -30,7 +35,12 @@ class testbed:
             raise ValueError(f"A signal with the name '{name}' already exists.")
         self.signals[name] = {'value': value, 'std_dev': st_dev, 'derivative': derivative}
         self.num_signals += 1  # Increment the number of signals
+        self.notify_observers()
 
+
+    def notify_observers(self):
+        for observer in self.observers:
+            observer.update_signals(self.signals)
 
     def signal_walk(self):
         for signal in self.signals.values():
