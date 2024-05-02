@@ -40,7 +40,7 @@ class testbed:
 
     def notify_observers(self):
         for observer in self.observers:
-            observer.update_signals(self.signals)
+            observer.add_signals_from_testbed(self.signals)
 
     def signal_walk(self):
         for signal in self.signals.values():

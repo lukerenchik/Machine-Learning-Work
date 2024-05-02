@@ -1,22 +1,23 @@
 import random
 from graphing_utility import AgentVisualizer
 
+
 class Agent:
 
     def __init__(self, testbed, exploration_rate=0.1):
         self.num_signals = testbed.num_signals
         self.expected_rewards = {}
         self.exploration_rate = exploration_rate
+        self.counts = {}
 
-        for reward_signal in testbed.signals:
-            self.expected_rewards[reward_signal] = 0.5
+        # I believe this line of code is now unecessary
+        # for reward_signal in testbed.signals:
+        #    self.expected_rewards[reward_signal] = 0.5
 
-
-    def update_signals(self, signals):
+    def add_signals_from_testbed(self, signals):
         for signal_name in signals.keys():
             if signal_name not in self.expected_rewards.keys():
                 self.expected_rewards[signal_name] = 0.5
-
 
     def choose_action(self):
         random_value = random.random()
@@ -30,6 +31,7 @@ class Agent:
         if self.expected_rewards:
             max_key = max(self.expected_rewards, key=self.expected_rewards.get)
             return self.expected_rewards[max_key]
+            #TODO: This needs to return the actual signal from Testbed
         else:
             return None
 
@@ -37,6 +39,7 @@ class Agent:
         if self.expected_rewards:
             random_key = random.choice(list(self.expected_rewards.keys()))
             return self.expected_rewards[random_key]
+            #TODO: This needs to return the actual signal from Testbed
         else:
             return None
 
@@ -56,15 +59,19 @@ class Agent:
         visualizer = AgentVisualizer(self.expected_rewards)
         visualizer.plot_estimations()
 
+    def sample_average_evaluation(self, key, returned_value):
+        if key not in self.expected_rewards:
+            self.expected_rewards[key] = returned_value
+            self.counts[key] = 1
+        else:
+            self.counts[key] += 1
+            step_size = 1 / self.counts[key]
+            self.expected_rewards[key] = self.expected_rewards[key] + step_size * (
+                        returned_value - self.expected_rewards[key])
 
-    def sample_average_evaluation(self):
-        # TODO: Implement sample-average algroithm for reward evaluation.
+    def time_step(self):
+        #TODO: This should house all of the necessary calls to execute a time walk if parameters are kept constant.
         pass
-
-    def exponential_recency_weighted_average(self):
-        # TODO: Implement exponential recency weighted average algorithm for non-stationary problems.
-        pass
-
 
 
 # Running a cycle should look like this:

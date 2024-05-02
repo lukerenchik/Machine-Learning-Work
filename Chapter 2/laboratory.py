@@ -11,7 +11,7 @@ testbed.add_signal("Hard_Problem_Solve", 50, 15, "positive")
 
 agent.print_expected_rewards()
 vertical_plotter = VGP("Reward Distribution")
-
+agent.plot_expected_values()
 signal_dictionary = testbed.return_all_signals_as_dictionary()
 
 for signal_name, attrs in signal_dictionary.items():
