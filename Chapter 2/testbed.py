@@ -52,3 +52,14 @@ class testbed:
 
     def return_all_signals_as_dictionary(self):
         return dict(self.signals.items())
+
+    import random
+
+    def generate_signal_value(self, key):
+        if key in self.signals:
+            signal_info = self.signals[key]
+            # Generate a new value based on the Gaussian distribution
+            new_value = random.gauss(signal_info['value'], signal_info['std_dev'])
+            return new_value
+        else:
+            raise ValueError(f"No signal found for key: {key}")

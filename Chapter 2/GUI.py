@@ -1,1 +1,1 @@
-#TODO Build a GUI
+#utilize tkinter, customTK, html/css, or other to visualize this stuff???
