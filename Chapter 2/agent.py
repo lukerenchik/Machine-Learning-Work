@@ -85,12 +85,12 @@ class Agent:
         # When a preference is increased/decreased all other preferences move in the opposite direction to make room for the movement in the selected object
         # This algorithm is most effective when a baseline is known, if a baseline is unknown performance preciptiously declines.
 
-        self.reward_preference[key] = self.reward_preference[key] + step_size * (returned_reward - self.expected_rewards[key]) * (1 - probability_of_selecting[key])
-        for item in self.reward_preference:
-            if item != self.reward_preference[key]:
-                item = item - step_size(returned_reward - self.expected_rewards[key])*probability_of_selecting[key]
+        self.reward_preference[key] += step_size * (returned_reward - self.expected_rewards[key]) * (1 - probability_of_selecting[key])
 
-
+        for k in self.reward_preference:
+            if k != key:
+                self.reward_preference[k] -= step_size * (returned_reward - self.expected_rewards[key]) * \
+                                             probability_of_selecting[k]
 
     def time_step(self):
         returned_value, key = self.choose_action()
