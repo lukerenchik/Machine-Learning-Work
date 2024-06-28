@@ -1,12 +1,14 @@
 import random
 from graphing_utility import AgentVisualizer
 
-
+#TODO: Create Superclass Agent, which has three child classes, Sample_Average_Bandit,
+# Gradient_Ascent_Bandit, Associative Search, Upper Confidence Bound Action Selection
 class Agent:
 
     def __init__(self, testbed, exploration_rate=0.1):
         self.num_signals = testbed.num_signals
         self.expected_rewards = {}
+        self.reward_preference = {}
         self.exploration_rate = exploration_rate
         self.counts = {}
         self.testbed = testbed
@@ -18,6 +20,9 @@ class Agent:
                 self.expected_rewards[signal_name] = 0.5
             if signal_name not in self.testbed.signals.keys():
                 self.testbed[signal_name] = signals[signal_name]
+            if signal_name not in self.reward_preference.keys():
+                self.reward_preference[signal_name] = 1 / len(signals)
+
 
     def choose_action(self):
         random_value = random.random()
@@ -72,6 +77,20 @@ class Agent:
             step_size = 1 / self.counts[key]
             self.expected_rewards[key] = self.expected_rewards[key] + step_size * (
                     returned_reward - self.expected_rewards[key])
+
+    def gradient_bandit(self, key, returned_reward, step_size):
+        # Every Object has a Preference value, which is generated through a soft-max function, and all objects add up to 1
+        # The probabilitiy of taking action A at time T is pi_t, initally all actions have an equal probability of being selected
+        # When a action is selected and its reward is below the average previous rewards then decrease its preference, otherwise increase its preference
+        # When a preference is increased/decreased all other preferences move in the opposite direction to make room for the movement in the selected object
+        # This algorithm is most effective when a baseline is known, if a baseline is unknown performance preciptiously declines.
+
+        self.reward_preference[key] = self.reward_preference[key] + step_size * (returned_reward - self.expected_rewards[key]) * (1 - probability_of_selecting[key])
+        for item in self.reward_preference:
+            if item != self.reward_preference[key]:
+                item = item - step_size(returned_reward - self.expected_rewards[key])*probability_of_selecting[key]
+
+
 
     def time_step(self):
         returned_value, key = self.choose_action()
