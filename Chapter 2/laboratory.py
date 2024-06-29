@@ -1,14 +1,14 @@
 from testbed import testbed as TB
 from graphing_utility import ViolinPlotter as VGP
-from agent import Agent as AGNT
+from sampleAverageBandit import SampleAverageBandit as SAB
 
 #TODO: Todo statements are used for text highlighting to better see the seperate sections of code in this file.
 
 #TODO: Object Setup, These Shouldn't have to be modified.
 testbed = TB(num_signals=0, step_size_parameter=.1)
-agent = AGNT(testbed)
-testbed.add_observer(agent)
-agent.print_expected_rewards()
+sampleAverageBandit = SAB(testbed)
+testbed.add_observer(sampleAverageBandit)
+sampleAverageBandit.print_expected_rewards()
 
 #TODO: Example for Three Functions with Very Different Expected Rewards, Highlights the need for exploration.
 #testbed.add_signal(name="Easy_Problem_Solve", value=10, st_dev=2, derivative="negative")
@@ -46,6 +46,6 @@ testbed.add_signal("sig_9", 0, .5, "random")
 
 for i in range(10000):
     testbed.signal_walk()
-    agent.time_step()
+    sampleAverageBandit.time_step()
     if i % 1000 == 0:
-        agent.plot_expected_values()
+        sampleAverageBandit.plot_expected_values()
