@@ -1,14 +1,17 @@
 from testbed import testbed as TB
 from graphing_utility import ViolinPlotter as VGP
 from sampleAverageBandit import SampleAverageBandit as SAB
-
+from gradientBandit import GradientBandit
 #TODO: Todo statements are used for text highlighting to better see the seperate sections of code in this file.
 
 #TODO: Object Setup, These Shouldn't have to be modified.
 testbed = TB(num_signals=0, step_size_parameter=.1)
 sampleAverageBandit = SAB(testbed)
+gradientBandit = GradientBandit(testbed)
+
 testbed.add_observer(sampleAverageBandit)
-sampleAverageBandit.print_expected_rewards()
+testbed.add_observer(gradientBandit)
+
 
 #TODO: Example for Three Functions with Very Different Expected Rewards, Highlights the need for exploration.
 #testbed.add_signal(name="Easy_Problem_Solve", value=10, st_dev=2, derivative="negative")
@@ -16,7 +19,9 @@ sampleAverageBandit.print_expected_rewards()
 #testbed.add_signal("Hard_Problem_Solve", 50, 15, "positive")
 
 
-#TODO: Test for 10 moving signals, these can be modified to simulate different behavior.
+#TODO: Test for 10 moving signals, these can be modified to simulate different behavior
+#TODO: Signal Set 1.
+'''
 testbed.add_signal("sig_1", 0, .1, "positive")
 testbed.add_signal("sig_2", 0, .5, "positive")
 testbed.add_signal("sig_3", 0, 1, "positive")
@@ -26,6 +31,43 @@ testbed.add_signal("sig_6", 0, 1, "negative")
 testbed.add_signal("sig_7", 0, 1, "zero")
 testbed.add_signal("sig_8", 0, .1, "random")
 testbed.add_signal("sig_9", 0, .5, "random")
+'''
+
+#TODO: Signal Set 2.
+
+testbed.add_signal("Positive Fast 50", 50, 1, "positive")
+testbed.add_signal("Positive Faster -3", -3, 1.2, "positive")
+testbed.add_signal("Positive Slow 100", 100, .5, "positive")
+testbed.add_signal("Negative Slow 10", 10, .1, "negative")
+testbed.add_signal("Negative Medium 100", 100, .5, "negative")
+testbed.add_signal("Negative Fast 1000", 1000, 1, "negative")
+testbed.add_signal("Zero Fast 10", 10, 1, "zero")
+testbed.add_signal("Random Slow 20", 20, .1, "random")
+testbed.add_signal("Random Medium 30", 30, .5, "random")
+
+
+
+#TODO: Main Loop for Sample-Average
+
+sampleAverageBandit.print_expected_rewards()
+
+for i in range(10000):
+    testbed.signal_walk()
+    sampleAverageBandit.time_step()
+    if i % 1000 == 0:
+        sampleAverageBandit.plot_expected_values()
+
+
+
+#TODO: Main Loop for Gradient
+
+for i in range(10000):
+    testbed.signal_walk()
+    gradientBandit.time_step()
+    if i % 1000 == 0:
+        gradientBandit.print_reward_preferences()
+        gradientBandit.plot_reward_preferences()
+
 
 
 
@@ -41,11 +83,3 @@ testbed.add_signal("sig_9", 0, .5, "random")
 # testbed.print_signals()
 # testbed.signal_walk()
 # testbed.print_signals()
-
-#TODO: Main Loop for Model Training
-
-for i in range(10000):
-    testbed.signal_walk()
-    sampleAverageBandit.time_step()
-    if i % 1000 == 0:
-        sampleAverageBandit.plot_expected_values()

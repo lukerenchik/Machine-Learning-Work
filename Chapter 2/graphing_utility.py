@@ -7,6 +7,7 @@ class ViolinPlotter:
         self.data = {}
         self.title = title
 
+
     def add_data(self, name, value, st_dev):
         self.data[name] = (value, st_dev)
 
@@ -35,9 +36,11 @@ class ViolinPlotter:
 
 
 class AgentVisualizer:
-    def __init__(self, estimations):
+    def __init__(self, estimations, title="title", x_label="x", y_label="y"):
         self.estimations = estimations
-        self.title = "Agent Testbed Estimation"
+        self.title = title
+        self.x_label = x_label
+        self.y_label = y_label
 
     def plot_estimations(self):
         # Extract keys and values from the dictionary
@@ -50,12 +53,13 @@ class AgentVisualizer:
 
         # Adding title and labels
         plt.title(self.title)
-        plt.xlabel('Reward Signals')
-        plt.ylabel('Expected Rewards')
+        plt.xlabel(self.x_label)
+        plt.ylabel(self.y_label)
 
         # Optional: Adding value labels on top of each bar
         for i, value in enumerate(expected_rewards):
-            plt.text(i, value + 0.5, str(value), ha='center', va='bottom')
+            rounded_value = round(value, 2)  # Round to 2 decimal places
+            plt.text(i, rounded_value + 0.5, f"{rounded_value:.2f}", ha='center', va='bottom')
 
         # Show the plot
         plt.show()

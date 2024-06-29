@@ -21,7 +21,7 @@ class Agent:
             if signal_name not in self.testbed.signals.keys():
                 self.testbed[signal_name] = signals[signal_name]
             if signal_name not in self.reward_preferences.keys():
-                self.reward_preferences[signal_name] = 0
+                self.reward_preferences[signal_name] = 1 / len(signals)
 
 
     def print_expected_rewards(self):
@@ -40,5 +40,6 @@ class Agent:
         #TODO: Return Metadata and send to graphing utility
         visualizer = AgentVisualizer(self.expected_rewards)
         visualizer.plot_estimations()
+
 
 

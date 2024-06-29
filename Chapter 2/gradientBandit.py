@@ -41,8 +41,11 @@ class GradientBandit(Agent):
 
 
     def print_reward_preferences(self):
+        softmax_distribution = self.softmax(self.reward_preferences)
         if self.reward_preferences:
             for key, value in self.reward_preferences.items():
+                print(f"{key}: {value}")
+            for key, value in softmax_distribution.items():
                 print(f"{key}: {value}")
         else:
             print("No reward preferences.")
@@ -53,12 +56,14 @@ class GradientBandit(Agent):
         if not self.reward_preferences:
             print("No expected rewards available.")
             return
-        visualizer = AgentVisualizer(self.reward_preferences)
-        visualizer.plot_estimations()
+        preference_visualizer = AgentVisualizer(self.reward_preferences, title="Reward Preferences", x_label="Signal Name", y_label="Preference Value")
+        preference_visualizer.plot_estimations()
+        softmax_visualizer = AgentVisualizer(self.softmax(self.reward_preferences), title="Softmax Distibution for Signals", x_label="Signal Name", y_label="Probability of Selection")
+        softmax_visualizer.plot_estimations()
+
 
     def time_step(self):
         #This function will package the choose_action and gradient_bandit steps into one operation callable by the laboratory.
         key = self.choose_action()
         self.gradient_bandit(key, self.testbed.generate_signal_value(key), .1)
-        self.print_reward_preferences()
-        #self.plot_reward_preferences()
+
