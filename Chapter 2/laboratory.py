@@ -2,15 +2,19 @@ from testbed import testbed as TB
 from graphing_utility import ViolinPlotter as VGP
 from sampleAverageBandit import SampleAverageBandit as SAB
 from gradientBandit import GradientBandit
+from upperConfidenceActionBandit import UpperConfidenceActionBandit
 #TODO: Todo statements are used for text highlighting to better see the seperate sections of code in this file.
 
 #TODO: Object Setup, These Shouldn't have to be modified.
 testbed = TB(num_signals=0, step_size_parameter=.1)
 sampleAverageBandit = SAB(testbed)
 gradientBandit = GradientBandit(testbed)
+upperConfidenceBandit = UpperConfidenceActionBandit(testbed)
+
 
 testbed.add_observer(sampleAverageBandit)
 testbed.add_observer(gradientBandit)
+testbed.add_observer(upperConfidenceBandit)
 
 
 #TODO: Example for Three Functions with Very Different Expected Rewards, Highlights the need for exploration.
@@ -48,7 +52,7 @@ testbed.add_signal("Random Medium 30", 30, .5, "random")
 
 
 #TODO: Main Loop for Sample-Average
-
+'''
 sampleAverageBandit.print_expected_rewards()
 
 for i in range(10000):
@@ -57,16 +61,30 @@ for i in range(10000):
     if i % 1000 == 0:
         sampleAverageBandit.plot_expected_values()
 
-
+'''
 
 #TODO: Main Loop for Gradient
-
+'''
 for i in range(10000):
     testbed.signal_walk()
     gradientBandit.time_step()
     if i % 1000 == 0:
         gradientBandit.print_reward_preferences()
         gradientBandit.plot_reward_preferences()
+'''
+
+#TODO: Main Loop for UCB
+
+upperConfidenceBandit.dictionary_init()
+
+for i in range(100):
+    testbed.signal_walk()
+    upperConfidenceBandit.time_step_UCB()
+    if i % 10 == 0:
+        print(upperConfidenceBandit.UCBDict)
+        print(upperConfidenceBandit.SignalValueCountDict)
+        upperConfidenceBandit.print_expected_rewards()
+        upperConfidenceBandit.plot_expected_values()
 
 
 

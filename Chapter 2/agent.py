@@ -12,6 +12,7 @@ class Agent:
         self.exploration_rate = exploration_rate
         self.counts = {}
         self.testbed = testbed
+        self.timestep = 1
 
 
     def add_signals_from_testbed(self, signals):
