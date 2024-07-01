@@ -64,17 +64,18 @@ for i in range(10000):
 '''
 
 #TODO: Main Loop for Gradient
-'''
+
 for i in range(10000):
     testbed.signal_walk()
     gradientBandit.time_step()
     if i % 1000 == 0:
         gradientBandit.print_reward_preferences()
         gradientBandit.plot_reward_preferences()
-'''
+
 
 #TODO: Main Loop for UCB
 
+'''
 upperConfidenceBandit.dictionary_init()
 
 for i in range(100):
@@ -85,7 +86,7 @@ for i in range(100):
         print(upperConfidenceBandit.SignalValueCountDict)
         upperConfidenceBandit.print_expected_rewards()
         upperConfidenceBandit.plot_expected_values()
-
+'''
 
 
 
