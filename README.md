@@ -1,1 +1,1 @@
-This is my personal repo for working through the concepts discussed in Sutton & Barto's introduction to Reinforcement Learning. 
+This is my personal repo for working through Machine Learning and AI problems.
